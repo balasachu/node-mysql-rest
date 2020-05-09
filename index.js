@@ -5,9 +5,9 @@ async function startup() {
     console.log('Starting application');
 
     try {
-        console.log('Initializing database module');
+        console.log('Check Database Connectivity');
 
-        //await database.initialize();
+        await database.db_validate();
     } catch (err) {
         console.error(err);
 

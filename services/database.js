@@ -1,10 +1,10 @@
 const mysqldb = require('mysql');
 const config = require('../config/config.js');
 const logger = require('../services/logging.js');
+const pool = mysqldb.createPool(config.dbconfig);
 
 async function connect() {
     logger.info("Mysql->Create Pool Starts")
-    const pool = mysqldb.createPool(config.dbconfig);
     const conn = await getConnection(pool)
     logger.info("Mysql->Create Pool Ends")
     return conn;
@@ -47,45 +47,24 @@ function simpleExecute(con, sql, args = []) {
 }
 module.exports.simpleExecute = simpleExecute
 
+async function db_validate(context) {
+    logger.info("db->Check DB Connectivity starts")
+    let query = "SELECT 1";
+    let conn;
+    try {
+      conn = await connect();
+  
+      const result = await simpleExecute(conn, query);
+      conn.release();
 
-
-/*async function initialize() {
-    await mysqldb.createPool(config.dbconfig);
-}
-
-module.exports.initialize = initialize;
-
-async function close() {
-    await mysqldb.getPool().close();
-}
-
-module.exports.close = close;
-
-function simpleExecute(statement, binds = [], opts = {}) {
-    return new Promise(async (resolve, reject) => {
-        let conn;
-
-        opts.outFormat = oracledb.OBJECT;
-        opts.autoCommit = true; 
-
-        try {
-            conn = await mysqldb.getConnection();
-
-            const result = await conn.execute(statement, binds, opts);
-
-            resolve(result);
-        } catch (err) {
-            reject(err);
-        } finally {
-            if (conn) { // conn assignment worked, need to close
-                try {
-                    await conn.close();
-                } catch (err) {
-                    console.log(err);
-                }
-            }
-        }
-    });
-}
-
-module.exports.simpleExecute = simpleExecute;*/
+      logger.info("DB Connectivity is Success")  
+      logger.info("db->Check DB Connectivity ends")
+      return result;
+    } catch (error) {
+      logger.error("db->DB Connectivity fails")
+      if(conn)
+        conn.release();
+      throw error
+    }
+  }
+  module.exports.db_validate = db_validate
