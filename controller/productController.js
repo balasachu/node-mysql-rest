@@ -1,12 +1,14 @@
 const db_product = require('../db_apis/db_product.js');
 const logger = require('../services/logging.js');
 
+//Get All Product and Get Product by id
 async function get(req, res, next) {
   try {
     logger.info("ProductController->Get Product Starts")
     
     const context = {};
 
+    //If Get Product by id
     if (req.params.id) {
       context.id = parseInt(req.params.id);
     }

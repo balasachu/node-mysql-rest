@@ -28,9 +28,9 @@ function initialize() {
         app.use((err, req, res, next) => {
             console.error(err);
             if (err.status === 404)
-                res.status(404).json({ message: "Not found" });
+                res.status(404).send({ message: "Not found" });
             else
-                res.status(500).json({ message: "Internal Server Error." });
+                res.status(500).send({ message: "Internal Server Error." });
         })
 
 

@@ -3,15 +3,8 @@ const config = require('../config/config.js');
 const logger = require('../services/logging.js');
 const pool = mysqldb.createPool(config.dbconfig);
 
-async function connect() {
-    logger.info("Mysql->Create Pool Starts")
-    const conn = await getConnection(pool)
-    logger.info("Mysql->Create Pool Ends")
-    return conn;
-}
-module.exports.connect = connect;
-
-function getConnection(pool) {
+//Get DB connection
+const connect = () => {
     return new Promise((resolve, reject) => {
         logger.info("Mysql-> Connection Promise Starts");
         pool.getConnection(function (err, conn) {
@@ -25,7 +18,6 @@ function getConnection(pool) {
                 if (err.code === 'ECONNREFUSED') {
                     console.error('Database connection was refused.')
                 }
-                if (conn) conn.release()
                 reject(err);
             }
             resolve(conn);
@@ -33,38 +25,54 @@ function getConnection(pool) {
         logger.info("Mysql-> Connection Promise Ends");
     });
 }
+module.exports.connect = connect;
 
-function simpleExecute(con, sql, args = []) {
+//Execute Query
+const executeQuery = (con, sql, args = []) => {
     return new Promise((resolve, reject) => {
         con.query(sql, args, (err, rows) => {
             if (err) {
                 reject(err);
-            } else {
-                resolve(rows);
             }
+            resolve(rows);
         });
     });
 }
-module.exports.simpleExecute = simpleExecute
+module.exports.executeQuery = executeQuery
 
-async function db_validate(context) {
+//Validate DB Connection during webserver server start
+const db_validate = async () => {
     logger.info("db->Check DB Connectivity starts")
     let query = "SELECT 1";
     let conn;
     try {
-      conn = await connect();
-  
-      const result = await simpleExecute(conn, query);
-      conn.release();
+        conn = await connect();
 
-      logger.info("DB Connectivity is Success")  
-      logger.info("db->Check DB Connectivity ends")
-      return result;
-    } catch (error) {
-      logger.error("db->DB Connectivity fails")
-      if(conn)
+        const result = await executeQuery(conn, query);
         conn.release();
-      throw error
+
+        logger.info("DB Connectivity is Success")
+        logger.info("db->Check DB Connectivity ends")
+        return result;
+    } catch (error) {
+        logger.error("db->DB Connectivity fails")
+        if (conn)
+            conn.release();
+        throw error
     }
-  }
-  module.exports.db_validate = db_validate
+}
+module.exports.db_validate = db_validate
+
+//Close Pool on Server Shutdown
+const close = () => {
+    pool.end()
+    return new Promise((resolve, reject) => {
+        pool.end((err) => {
+            if (err) {
+                reject(err);
+            }
+            resolve();
+        });
+    });
+}
+module.exports.close = close

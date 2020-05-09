@@ -2,6 +2,7 @@ const database = require('../services/database.js');
 const dbQuery = require('../db_query/productQuery.js');
 const logger = require('../services/logging.js');
 
+//Fetch product from DB
 async function get(context) {
   logger.info("db->Retrieve product details starts")
   let query = dbQuery.prodSelQuery;
@@ -14,10 +15,9 @@ async function get(context) {
 
   let conn;
   try {
-    
     conn = await database.connect();
 
-    const result = await database.simpleExecute(conn, query,binds);
+    const result = await database.executeQuery(conn, query,binds);
     conn.release();
     logger.info("db->Retrieve product details ends")
     return result;
