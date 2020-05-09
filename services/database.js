@@ -2,6 +2,7 @@ const mysqldb = require('mysql');
 const config = require('../config/config.js');
 const logger = require('../services/logging.js');
 const pool = mysqldb.createPool(config.dbconfig);
+module.exports.pool = pool;
 
 //Get DB connection
 const connect = () => {

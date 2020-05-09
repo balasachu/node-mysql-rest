@@ -15,6 +15,13 @@ async function get(context) {
 
   let conn;
   try {
+    /**
+     * Note: We can also use conn = database.pool . This is a shortcut for the pool.getConnection() -> connection.query() -> connection.release() code flow. 
+     * Using pool.getConnection() is useful to share connection state for subsequent queries. 
+     * This is because two calls to pool.query() may use two different connections and run in parallel. 
+     * conn.release() should be remove when using database.pool
+     */
+
     conn = await database.connect();
 
     const result = await database.executeQuery(conn, query,binds);
